@@ -100,6 +100,10 @@ namespace BankApp.Services
                 }
                 else if (userInput == "4")
                 {
+                    throw new NotImplementedException("lokata");
+                }
+                else if (userInput == "0")
+                {
                     Console.WriteLine("You have been logged out");
                     break;
                 }

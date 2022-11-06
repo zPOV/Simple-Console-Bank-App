@@ -6,6 +6,14 @@ namespace BankApp
     {
         static void Main(string[] args)
         {
+            string username = null;
+            string password = null;
+
+            if(args.Length == 2)
+            {
+                username = args[0];
+                password = args[1];
+            }
 
             Console.WriteLine("1. Ang 2. Pol");
             Language language;
@@ -25,7 +33,7 @@ namespace BankApp
             }
 
             var Bank1 = new BankProcess(language);
-            Bank1.Process();
+            Bank1.Process(username, password);
         }
     }
 }

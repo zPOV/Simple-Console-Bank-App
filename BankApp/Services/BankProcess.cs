@@ -37,7 +37,7 @@ namespace BankApp.Services
             }
         }
 
-        public void Process()
+        public void Process(string username, string password)
         {
             string bankAppExePath = Assembly.GetExecutingAssembly().Location;
             string bankAppFolderPath = Path.GetDirectoryName(bankAppExePath);
@@ -55,30 +55,38 @@ namespace BankApp.Services
 
             Console.WriteLine(_consoleTexts.GetWelcomingMessage());
 
-            while (true)
+            Client client = null;
+
+            if (!string.IsNullOrEmpty(username) || !string.IsNullOrEmpty(password))
             {
-                Console.WriteLine("Would you like to log in or create a new account?\n 1. Log in\n 2. Create a new account");
-                string loginUserInput = Console.ReadLine();
-                if (loginUserInput == "1")
-                {
-                    break;
-                }
-                else if (loginUserInput == "2")
-                {
-                    _clientManager.Create(clientData, bankAccountData, clientsPath, bankAccountPath);
-                }
-                else
-                {
-                    Console.WriteLine("Incorrect input\n");
-                }
+                client = _clientManager.ClientLogIn(clientData, username, password);
             }
 
-            Console.Write("Please type in your username: ");
-            var usernameTemp = Console.ReadLine();
-            Console.Write("Please type in your password: ");
-            var passwordTemp = Console.ReadLine();
-
-            var client = _clientManager.ClientLogIn(clientData, usernameTemp, passwordTemp);
+            if (client == null)
+            {
+                while (true)
+                {
+                    Console.WriteLine("Would you like to log in or create a new account?\n 1. Log in\n 2. Create a new account");
+                    string loginUserInput = Console.ReadLine();
+                    if (loginUserInput == "1")
+                    {
+                        break;
+                    }
+                    else if (loginUserInput == "2")
+                    {
+                        _clientManager.Create(clientData, bankAccountData, clientsPath, bankAccountPath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Incorrect input\n");
+                    }
+                }
+                Console.Write("Please type in your username: ");
+                var usernameTemp = Console.ReadLine();
+                Console.Write("Please type in your password: ");
+                var passwordTemp = Console.ReadLine();
+                client = _clientManager.ClientLogIn(clientData, usernameTemp, passwordTemp);
+            }
             Console.WriteLine("\nYou are logged in!\n");
             Console.WriteLine($"Your bank account Identifier is: {client.Guid}");
 

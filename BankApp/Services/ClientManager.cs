@@ -60,7 +60,7 @@ namespace BankApp.Services
                     return client;
                 }
             }
-            throw new Exception("Username or password are incorrect");
+            return null;
         }
         public BankAccount GetClientAccount(Client clientToFind, List<BankAccount> bankAccounts)
         {

@@ -32,7 +32,7 @@ namespace BankApp.Services
             int age = Convert.ToInt32(Console.ReadLine());
             if (age < 18)
             {
-                Console.WriteLine("You are too young, bitch ass");
+                Console.WriteLine("You are too young");
                 return;
             }
             Console.Write("Username: ");

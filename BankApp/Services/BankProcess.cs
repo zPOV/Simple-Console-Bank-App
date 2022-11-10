@@ -86,7 +86,6 @@ namespace BankApp.Services
                 Console.Write("Please type in your password: ");
                 var passwordTemp = Console.ReadLine();
                 client = _clientManager.ClientLogIn(clientData, usernameTemp, passwordTemp);
-            }
             Console.WriteLine("\nYou are logged in!\n");
             Console.WriteLine($"Your bank account Identifier is: {client.Guid}");
 

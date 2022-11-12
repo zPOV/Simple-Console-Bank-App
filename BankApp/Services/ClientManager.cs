@@ -6,9 +6,10 @@ namespace BankApp.Services
     {
         void Create(List<Client> clientData, List<BankAccount> bankAccountData, string clientsPath, string bankAccountPath);
         public Client ClientLogIn(List<Client> clients, string username, string password);
-        public BankAccount GetClientAccount(Client clientToFind, List<BankAccount> bankAccounts);
+        public BankAccount GetClientBankAccount(Client clientToFind, List<BankAccount> bankAccounts);
         public void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password);
         public void AddClientBankAccount(List<BankAccount> bankAccounts, int clientId);
+        public Client FindClientByGuid(List<Client> clientData, string guid);
     }
 
     public class ClientManager : IClientManager
@@ -32,7 +33,7 @@ namespace BankApp.Services
             int age = Convert.ToInt32(Console.ReadLine());
             if (age < 18)
             {
-                Console.WriteLine("You are too young, bitch ass");
+                Console.WriteLine("You are too young");
                 return;
             }
             Console.Write("Username: ");
@@ -62,7 +63,8 @@ namespace BankApp.Services
             }
             return null;
         }
-        public BankAccount GetClientAccount(Client clientToFind, List<BankAccount> bankAccounts)
+
+        public BankAccount GetClientBankAccount(Client clientToFind, List<BankAccount> bankAccounts)
         {
             foreach (var bankAccount in bankAccounts)
             {
@@ -73,23 +75,59 @@ namespace BankApp.Services
             }
             throw new Exception("Bank account does not exist");
         }
+
         public void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password)
         {
-            const int idIfNoClients = 1;
+            //const int idIfNoClients = 1;
             var guid = Guid.NewGuid();
-            if (clientsData.Count == 0)
-            {
-                var clientIfFirst = new Client(idIfNoClients, firstName, lastName, age, username, password, guid);
-                clientsData.Add(clientIfFirst);
-            }
-            else
-            {
-                int newestClientId = clientsData.Last().Id;
-                int id = newestClientId + 1;
-                var client = new Client(id, firstName, lastName, age, username, password, guid);
-                clientsData.Add(client);
-            }
+            //if (clientsData.Count == 0)
+            //{
+            //    var clientIfFirst = new Client(idIfNoClients, firstName, lastName, age, username, password, guid);
+            //    clientsData.Add(clientIfFirst);
+            //}
+            //else
+            //{
+            //    int newestClientId = clientsData.Last().Id;
+            //    int id = newestClientId + 1;
+            //    var client = new Client(id, firstName, lastName, age, username, password, guid);
+            //    clientsData.Add(client);
+            //}
+
+            //var lastClient = clientsData.LastOrDefault();
+            //var lastClientId = 0;
+
+            //if (lastClient != null)
+            //{
+            //    lastClientId = lastClient.Id;
+            //}
+            //int newestClientId = lastClientId;
+
+            var newestClientId = clientsData.LastOrDefault()?.Id ?? 0;
+            var id = newestClientId + 1;
+            var client = new Client(id, firstName, lastName, age, username, password, guid);
+            clientsData.Add(client);
         }
+
+        public Client FindClientByGuid(List<Client> clientData , string guid) 
+        {
+            
+            foreach(var client in clientData)
+            {
+                if(client.Guid == null)
+                {
+                    continue;
+                }
+
+                string clientGuidConv = Convert.ToString(client.Guid);
+                if(clientGuidConv == guid)
+                {
+                    return client;
+                }
+            }
+            throw new Exception("Client does not exist");
+        }
+
+
         public void AddClientBankAccount(List<BankAccount> bankAccounts, int clientId)
         {
             var bankAccount = new BankAccount(clientId, 0);

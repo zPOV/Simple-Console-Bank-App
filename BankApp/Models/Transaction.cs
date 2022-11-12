@@ -15,7 +15,7 @@
         {
             Sender = sender;
             Recipient = recipient;
-            Amount = amount;
+            Amount = Math.Round(amount, 2);
             TransactionDate = transactionDate;
         }
     }

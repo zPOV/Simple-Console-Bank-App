@@ -20,18 +20,6 @@ namespace BankApp.Services
             return null;
         }
 
-        //static string passwordHasher(string password)
-        //{
-        //    SHA256 crypt = new SHA256Managed();
-
-        //    string hash = String.Empty;
-        //    byte[] crypto = crypt.ComputeHash(Encoding.ASCII.GetBytes(password));
-        //    foreach (byte theByte in crypto)
-        //    {
-        //        hash += theByte.ToString("x2");
-        //    }
-        //    return hash;
-        //}
         public string StringtoHashString(string text)
         {
             if (string.IsNullOrEmpty(text))

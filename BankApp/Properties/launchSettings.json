@@ -1,8 +1,7 @@
 {
   "profiles": {
     "BankApp": {
-      "commandName": "Project",
-      "commandLineArgs": "Dupa Dupa"
+      "commandName": "Project"
     }
   }
 }

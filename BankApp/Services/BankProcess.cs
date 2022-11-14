@@ -16,16 +16,20 @@ namespace BankApp.Services
         private readonly BalanceManager _balanceManager;
         private readonly TransferManager _transferManager;
         private readonly IConsoleTexts _consoleTexts;
+        private readonly DepositManager _depositManager;
         private const string BankClientCsvName = "BankClientData.csv";
         private const string BankAccountCsvName = "BankAccountData.csv";
         private const string BankTransactionCsvName = "TransactionHistory.csv";
         private const string DataFolder = "data";
+        private const string BankDepositCsvName = "DepositData.csv";
         public BankProcess(Language language)
         {
             _fileManager = new FileManager();
             _clientManager = new ClientManager();
             _balanceManager = new BalanceManager();
             _transferManager = new TransferManager();
+            _depositManager = new DepositManager();
+            
 
             if (language == Language.English)
             {
@@ -46,20 +50,30 @@ namespace BankApp.Services
             string clientsPath = Path.Combine(folderName, BankClientCsvName);
             string bankAccountPath = Path.Combine(folderName, BankAccountCsvName);
             string transactionHistoryPath = Path.Combine(folderName, BankTransactionCsvName);
+            string depositsDataPath = Path.Combine(folderName, BankDepositCsvName);
 
             var clientData = _fileManager.ReadData<Client>(clientsPath);
 
             var bankAccountData = _fileManager.ReadData<BankAccount>(bankAccountPath);
 
-            var TransactionHistoryData = _fileManager.ReadData<Transaction>(transactionHistoryPath);
+            var transactionHistoryData = _fileManager.ReadData<Transaction>(transactionHistoryPath);
+
+            var depositData = _fileManager.ReadData<Deposit>(depositsDataPath);
 
             Console.WriteLine(_consoleTexts.GetWelcomingMessage());
 
             Client client = null;
 
-            if (!string.IsNullOrEmpty(username) || !string.IsNullOrEmpty(password))
+            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
             {
                 client = _clientManager.ClientLogIn(clientData, username, password);
+                if (client == null)
+                {
+                    Console.WriteLine("Wrong username or password");
+                    return;
+                }
+                Console.WriteLine("\nYou are logged in!\n");
+                Console.WriteLine($"Your bank account Identifier is: {client.Guid}");
             }
 
             if (client == null)
@@ -81,39 +95,66 @@ namespace BankApp.Services
                         Console.WriteLine("Incorrect input\n");
                     }
                 }
-                Console.Write("Please type in your username: ");
-                var usernameTemp = Console.ReadLine();
-                Console.Write("Please type in your password: ");
-                var passwordTemp = Console.ReadLine();
-                client = _clientManager.ClientLogIn(clientData, usernameTemp, passwordTemp);
+                while(true)
+                {
+                    Console.Write("Please type in your username: ");
+                    var usernameTemp = Console.ReadLine();
+                    Console.Write("Please type in your password: ");
+                    var passwordTemp = Console.ReadLine();
+                    client = _clientManager.ClientLogIn(clientData, usernameTemp, passwordTemp);
+                    if (client == null)
+                    {
+                        Console.WriteLine("Wrong username or password");
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                Console.WriteLine("\nYou are logged in!\n");
+                Console.WriteLine($"Your bank account Identifier is: {client.Guid}");
+                _balanceManager.ShowBalance(client, bankAccountData);
             }
-            Console.WriteLine("\nYou are logged in!\n");
-            Console.WriteLine($"Your bank account Identifier is: {client.Guid}");
 
             while (true)
             {
-                Console.WriteLine("What would you like to do?\n 1. Add balance\n 2. Make a transfer\n 3. Show history of transfers\n 4. Log out");
-                string userInput = Console.ReadLine();
-                if (userInput == "1")
+                try
                 {
-                    _balanceManager.Add(client, bankAccountData);
+                    Console.WriteLine("What would you like to do?\n 1. Add balance\n 2. Make a transfer\n 3. Show history of transfers\n 4. Show deposit options\n 0. Log out");
+                    string userInput = Console.ReadLine();
+                    if (userInput == "1")
+                    {
+                        _balanceManager.Add(client, bankAccountData);
+                    }
+                    else if (userInput == "2")
+                    {
+                        _transferManager.Transfer(clientData, bankAccountData, transactionHistoryData, client, transactionHistoryPath);
+                    }
+                    else if (userInput == "3")
+                    {
+                        _transferManager.ShowHistory(transactionHistoryData, client);
+                    }
+                    else if (userInput == "4")
+                    {
+                        _depositManager.Deposit(depositData, depositsDataPath, client, bankAccountData);
+                    }
+                    else if (userInput == "0")
+                    {
+                        Console.WriteLine("You have been logged out");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Wrong input, please try again\n");
+                    }
+                    _fileManager.WriteData(clientData, clientsPath);
+                    _fileManager.WriteData(bankAccountData, bankAccountPath);
+                    _fileManager.WriteData(transactionHistoryData, transactionHistoryPath);
                 }
-                else if (userInput == "2")
+                catch(Exception ex)
                 {
-                    _transferManager.Transfer(clientData, bankAccountData, TransactionHistoryData, client, transactionHistoryPath);
+                    Console.WriteLine(ex.Message);
                 }
-                else if (userInput == "3")
-                {
-                    _transferManager.ShowHistory(TransactionHistoryData, client);
-                }
-                else if (userInput == "4")
-                {
-                    Console.WriteLine("You have been logged out");
-                    break;
-                }
-                _fileManager.WriteData(clientData, clientsPath);
-                _fileManager.WriteData(bankAccountData, bankAccountPath);
-                _fileManager.WriteData(TransactionHistoryData, transactionHistoryPath);
             }
         }
     }

@@ -4,49 +4,54 @@ namespace BankApp.Services
 {
     public class TransferManager
     {
-        private readonly FileManager _fileManager;
-        private readonly BankService _bankService;
         private readonly BalanceManager _balanceManager;
         private readonly IClientManager _clientManager;
 
         public TransferManager()
         {
-            _fileManager = new FileManager();
-            _bankService = new BankService();
             _balanceManager = new BalanceManager();
             _clientManager = new ClientManager();
         }
         public void Transfer(
             List<Client> clientData,
             List<BankAccount> bankAccountData,
-            List<Transaction> TransactionHistoryData,
+            List<Transaction> transactionHistoryData,
             Client client,
             string transactionHistoryPath)
         {
             Console.Write("Bank account of the person to whom you want to transfer your funds: ");
             string recipientGuid = Console.ReadLine();
             Console.Write("Please specify the amount(USD) you want to transfer: ");
-            var amount = Convert.ToDecimal(Console.ReadLine());
+            var amount = Console.ReadLine();
+
+            if (!decimal.TryParse(amount, out var result))
+            {
+                Console.WriteLine("Wrong input given\n");
+                return;
+            }
+
             DateTime date = DateTime.Now;
-            var recipientBankAccount = _bankService.GetRecipientAccount(clientData, bankAccountData, recipientGuid);
+            var recipientBankAccount = GetRecipientAccount(clientData, bankAccountData, recipientGuid);
+
 
             if (recipientBankAccount == null)
             {
                 Console.WriteLine("\nThis person doesn't exist\n");
                 return;
             }
-            var currentClientBankAccount = _clientManager.GetClientAccount(client, bankAccountData);
-            if (amount <= currentClientBankAccount.Balance)
+            var currentClientBankAccount = _clientManager.GetClientBankAccount(client, bankAccountData);
+            var currentRecipient = _clientManager.FindClientByGuid(clientData, recipientGuid);
+            if (result <= currentClientBankAccount.Balance && result > 0)
             {
-                Console.WriteLine($"You will send {amount} USD to {recipientGuid}. Is that correct? y/n\n");
+                Console.WriteLine($"You will send {amount} USD to {currentRecipient.FirstName} {currentRecipient.LastName}. Is that correct? y/n\n");
                 var answer = Console.ReadLine();
                 if (answer == "y")
                 {
-                    _balanceManager.SubtractClientBalance(client, bankAccountData, amount);
-                    _balanceManager.AddBalance(amount, recipientBankAccount);
-                    AddToTransactionHistory(TransactionHistoryData, client.FirstName, recipientGuid, amount, date);
-                    _fileManager.WriteData(TransactionHistoryData, transactionHistoryPath);
-                    Console.WriteLine($"You have transfered {amount} USD to {recipientGuid}! //{recipientBankAccount.Balance} \n");
+
+                    _balanceManager.SubtractClientBalance(client, bankAccountData, result);
+                    _balanceManager.AddBalance(result, recipientBankAccount);
+                    AddToTransactionHistory(transactionHistoryData, client.FirstName, recipientGuid, result, date);
+                    Console.WriteLine($"You have transfered {result} USD to {currentRecipient.FirstName} {currentRecipient.LastName}!\n");
                 }
                 else if (answer == "n")
                 {
@@ -62,10 +67,24 @@ namespace BankApp.Services
                 Console.WriteLine("Insufficient funds");
             }
         }
-        public void ShowHistory(List<Transaction> TransactionHistoryData, Client client)
-        {
-            var currentClientTransactions = AddTransactionHistory(TransactionHistoryData, client);
 
+        public BankAccount GetRecipientAccount(List<Client> clients, List<BankAccount> bankAccounts, string guid)
+        {
+            if (Guid.TryParse(guid, out Guid result))
+            {
+                var clientId = clients.Where(client => result == client.Guid).FirstOrDefault()?.Id;
+                if (clientId == null)
+                {
+                    return null;
+                }
+                return bankAccounts.Where(bankAccount => clientId == bankAccount.ClientId).FirstOrDefault();
+            }
+            return null;
+        }
+
+        public void ShowHistory(List<Transaction> transactionHistoryData, Client client)
+        {
+            var currentClientTransactions = GetTransactionHistory(transactionHistoryData, client);
             if (currentClientTransactions.Any())
             {
                 foreach (Transaction transaction in currentClientTransactions)
@@ -77,18 +96,19 @@ namespace BankApp.Services
             {
                 Console.WriteLine("\nThere are no transactions visible on your account\n");
             }
+            Console.WriteLine("\n");
         }
-        public void AddToTransactionHistory(List<Transaction> TransactionHistory, string sender, string recipient, decimal amount, DateTime transactionDate)
+        public void AddToTransactionHistory(List<Transaction> transactionHistory, string sender, string recipient, decimal amount, DateTime transactionDate)
         {
-            var Transaction = new Transaction(sender, recipient, amount, transactionDate);
+            var transaction = new Transaction(sender, recipient, amount, transactionDate);
 
-            TransactionHistory.Add(Transaction);
+            transactionHistory.Add(transaction);
         }
-        public List<Transaction> AddTransactionHistory(List<Transaction> TransactionHistory, Client currentClient)
+        public List<Transaction> GetTransactionHistory(List<Transaction> transactionHistory, Client currentClient)
         {
-            var currentClientTransactions = TransactionHistory
-                .Where(TransactionHistory => currentClient.FirstName == TransactionHistory.Sender
-                || currentClient.FirstName == TransactionHistory.Recipient).ToList();
+            var currentClientTransactions = transactionHistory
+                .Where(transactionHistory => currentClient.FirstName == transactionHistory.Sender
+                || currentClient.FirstName == transactionHistory.Recipient).ToList();
 
             return currentClientTransactions;
         }

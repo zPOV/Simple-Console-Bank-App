@@ -1,4 +1,5 @@
 ﻿using BankApp.Services;
+using System.Data;
 
 namespace BankApp
 {
@@ -9,7 +10,7 @@ namespace BankApp
             string username = null;
             string password = null;
 
-            if(args.Length == 2)
+            if (args.Length == 2)
             {
                 username = args[0];
                 password = args[1];
@@ -29,7 +30,7 @@ namespace BankApp
             }
             else
             {
-                throw new Exception("o ty gnojku");
+                throw new Exception("Wrong input given");
             }
 
             var Bank1 = new BankProcess(language);

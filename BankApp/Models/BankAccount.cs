@@ -13,7 +13,7 @@
         public BankAccount(int clientId, decimal balance)
         {
             ClientId = clientId;
-            Balance = balance;
+            Balance = Math.Round(balance, 2);
         }
     }
 }

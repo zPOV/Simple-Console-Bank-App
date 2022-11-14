@@ -4,15 +4,11 @@ namespace BankApp.Services
 {
     public class TransferManager
     {
-        private readonly FileManager _fileManager;
-        private readonly BankService _bankService;
         private readonly BalanceManager _balanceManager;
         private readonly IClientManager _clientManager;
 
         public TransferManager()
         {
-            _fileManager = new FileManager();
-            _bankService = new BankService();
             _balanceManager = new BalanceManager();
             _clientManager = new ClientManager();
         }
@@ -35,7 +31,7 @@ namespace BankApp.Services
             }
 
             DateTime date = DateTime.Now;
-            var recipientBankAccount = _bankService.GetRecipientAccount(clientData, bankAccountData, recipientGuid);
+            var recipientBankAccount = GetRecipientAccount(clientData, bankAccountData, recipientGuid);
 
 
             if (recipientBankAccount == null)
@@ -71,6 +67,21 @@ namespace BankApp.Services
                 Console.WriteLine("Insufficient funds");
             }
         }
+
+        public BankAccount GetRecipientAccount(List<Client> clients, List<BankAccount> bankAccounts, string guid)
+        {
+            if (Guid.TryParse(guid, out Guid result))
+            {
+                var clientId = clients.Where(client => result == client.Guid).FirstOrDefault()?.Id;
+                if (clientId == null)
+                {
+                    return null;
+                }
+                return bankAccounts.Where(bankAccount => clientId == bankAccount.ClientId).FirstOrDefault();
+            }
+            return null;
+        }
+
         public void ShowHistory(List<Transaction> transactionHistoryData, Client client)
         {
             var currentClientTransactions = GetTransactionHistory(transactionHistoryData, client);

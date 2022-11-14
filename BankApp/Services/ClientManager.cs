@@ -5,22 +5,20 @@ namespace BankApp.Services
     public interface IClientManager
     {
         void Create(List<Client> clientData, List<BankAccount> bankAccountData, string clientsPath, string bankAccountPath);
-        public Client ClientLogIn(List<Client> clients, string username, string password);
-        public BankAccount GetClientBankAccount(Client clientToFind, List<BankAccount> bankAccounts);
-        public void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password);
-        public void AddClientBankAccount(List<BankAccount> bankAccounts, int clientId);
-        public Client FindClientByGuid(List<Client> clientData, string guid);
+        Client ClientLogIn(List<Client> clients, string username, string password);
+        BankAccount GetClientBankAccount(Client clientToFind, List<BankAccount> bankAccounts);
+        Client FindClientByGuid(List<Client> clientData, string guid);
     }
 
     public class ClientManager : IClientManager
     {
         private readonly FileManager _fileManager;
-        private readonly BankService _bankService;
+        private readonly HashService _hashService;
 
         public ClientManager()
         {
             _fileManager = new FileManager();
-            _bankService = new BankService();
+            _hashService = new HashService();
         }
 
         public void Create(List<Client> clientData, List<BankAccount> bankAccountData, string clientsPath, string bankAccountPath)
@@ -41,7 +39,7 @@ namespace BankApp.Services
             Console.Write("Password: ");
             string passwordInput = Console.ReadLine();
 
-            var passwordHash = _bankService.StringtoHashString(passwordInput);
+            var passwordHash = _hashService.StringtoHashString(passwordInput);
 
             AddNewClientToClientData(clientData, firstNameInput, lastNameInput, age, usernameInput, passwordHash);
             AddClientBankAccount(bankAccountData, clientData.Last().Id);
@@ -52,7 +50,7 @@ namespace BankApp.Services
 
         public Client ClientLogIn(List<Client> clients, string username, string password)
         {
-            var passwordHashed = _bankService.StringtoHashString(password);
+            var passwordHashed = _hashService.StringtoHashString(password);
 
             foreach (var client in clients)
             {
@@ -76,7 +74,26 @@ namespace BankApp.Services
             throw new Exception("Bank account does not exist");
         }
 
-        public void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password)
+        public Client FindClientByGuid(List<Client> clientData, string guid)
+        {
+
+            foreach (var client in clientData)
+            {
+                if (client.Guid == null)
+                {
+                    continue;
+                }
+
+                string clientGuidConv = Convert.ToString(client.Guid);
+                if (clientGuidConv == guid)
+                {
+                    return client;
+                }
+            }
+            throw new Exception("Client does not exist");
+        }
+
+        private void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password)
         {
             //const int idIfNoClients = 1;
             var guid = Guid.NewGuid();
@@ -108,27 +125,7 @@ namespace BankApp.Services
             clientsData.Add(client);
         }
 
-        public Client FindClientByGuid(List<Client> clientData , string guid) 
-        {
-            
-            foreach(var client in clientData)
-            {
-                if(client.Guid == null)
-                {
-                    continue;
-                }
-
-                string clientGuidConv = Convert.ToString(client.Guid);
-                if(clientGuidConv == guid)
-                {
-                    return client;
-                }
-            }
-            throw new Exception("Client does not exist");
-        }
-
-
-        public void AddClientBankAccount(List<BankAccount> bankAccounts, int clientId)
+        private void AddClientBankAccount(List<BankAccount> bankAccounts, int clientId)
         {
             var bankAccount = new BankAccount(clientId, 0);
             bankAccounts.Add(bankAccount);

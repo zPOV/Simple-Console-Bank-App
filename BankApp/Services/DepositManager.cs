@@ -1,4 +1,5 @@
 ﻿using BankApp.Models;
+using BankApp.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,13 +97,18 @@ namespace BankApp.Services
             var currentClientBankAccount = _clientManager.GetClientBankAccount(client, bankAccounts);
             var currentDeposit = FindDeposit(depositsData, result);
             var amountToPayOut = FindDepositAmount(depositsData, result);
-            int checksIfEligible = CheckIfEligible(currentDeposit);
-            if (checksIfEligible == 2)
+            var checksIfEligible = CheckIfEligible(currentDeposit);
+            if(checksIfEligible == Eligibility.WrongInput)
+            {
+                Console.WriteLine("Wrong input given");
+                return;
+            }
+            else if (checksIfEligible == Eligibility.InsufficientTimePassed)
             {
                 Console.WriteLine("It's impossible to withdraw this deposit yet");
                 return;
             }
-            else if(checksIfEligible == 3)
+            else if(checksIfEligible == Eligibility.Eligible)
             {
                 _fileManager.WriteData(depositsData, depositsPath);
                 _balanceManager.AddBalance(amountToPayOut, currentClientBankAccount);
@@ -128,21 +134,20 @@ namespace BankApp.Services
             Console.WriteLine(string.Empty);
         }
 
-        public int CheckIfEligible(Deposit deposit)
+        private Eligibility CheckIfEligible(Deposit deposit)
         {
             DateTime date = DateTime.Now;
             if(deposit == null)
             {
-                Console.WriteLine("Wrong input given");
-                return 1;
+                return Eligibility.WrongInput;
             }
             var timeSinceCreationOfDeposit = date.Subtract(deposit.StartDate);
             var timeSinceCreationOfDepositInYears = timeSinceCreationOfDeposit.Days / 365;
             if (timeSinceCreationOfDepositInYears < 1)
             {
-                return 2;
+                return Eligibility.InsufficientTimePassed;
             }
-            return 3;
+            return Eligibility.Eligible;
         }
 
         public decimal GetDepositAmount(Deposit deposit)

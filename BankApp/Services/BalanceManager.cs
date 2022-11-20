@@ -10,6 +10,7 @@ namespace BankApp.Services
             _clientManager = new ClientManager();
 
         }
+
         public void Add(Client client, List<BankAccount> bankAccountData)
         {
             Console.Write("Please specify the amount you want to add to your account balance: ");
@@ -30,11 +31,6 @@ namespace BankApp.Services
         public void AddBalance(decimal amount, BankAccount account)
         {
             account.Balance = account.Balance + amount;
-        }
-
-        public void AddBalanceToDeposit(decimal amount, Deposit account)
-        {
-            account.Amount = account.Amount + amount;
         }
 
         public void SubtractClientBalance(Client clientToFind, List<BankAccount> bankAccounts, decimal amount)

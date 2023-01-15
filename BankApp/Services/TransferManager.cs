@@ -16,8 +16,7 @@ namespace BankApp.Services
             List<Client> clientData,
             List<BankAccount> bankAccountData,
             List<Transaction> transactionHistoryData,
-            Client client,
-            string transactionHistoryPath)
+            Client client)
         {
             Console.Write("Bank account of the person to whom you want to transfer your funds: ");
             string recipientGuid = Console.ReadLine();

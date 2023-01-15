@@ -128,7 +128,7 @@ namespace BankApp.Services
                     }
                     else if (userInput == "2")
                     {
-                        _transferManager.Transfer(clientData, bankAccountData, transactionHistoryData, client, transactionHistoryPath);
+                        _transferManager.Transfer(clientData, bankAccountData, transactionHistoryData, client);
                     }
                     else if (userInput == "3")
                     {

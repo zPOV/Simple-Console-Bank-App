@@ -95,30 +95,7 @@ namespace BankApp.Services
 
         private void AddNewClientToClientData(List<Client> clientsData, string firstName, string lastName, int age, string username, string password)
         {
-            //const int idIfNoClients = 1;
             var guid = Guid.NewGuid();
-            //if (clientsData.Count == 0)
-            //{
-            //    var clientIfFirst = new Client(idIfNoClients, firstName, lastName, age, username, password, guid);
-            //    clientsData.Add(clientIfFirst);
-            //}
-            //else
-            //{
-            //    int newestClientId = clientsData.Last().Id;
-            //    int id = newestClientId + 1;
-            //    var client = new Client(id, firstName, lastName, age, username, password, guid);
-            //    clientsData.Add(client);
-            //}
-
-            //var lastClient = clientsData.LastOrDefault();
-            //var lastClientId = 0;
-
-            //if (lastClient != null)
-            //{
-            //    lastClientId = lastClient.Id;
-            //}
-            //int newestClientId = lastClientId;
-
             var newestClientId = clientsData.LastOrDefault()?.Id ?? 0;
             var id = newestClientId + 1;
             var client = new Client(id, firstName, lastName, age, username, password, guid);
